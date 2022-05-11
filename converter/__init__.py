@@ -72,13 +72,16 @@ def get_file(dir):
     for file in os.listdir(dir):
             if file.endswith(".txt"):
              fl = os.path.join(dir, file)
-             print(fl)
              for line in open(fl, 'r'):
-               res.append(dict(zip(("tag", "date", "value"), line.split(","))))
+                 line = line.strip()
+                 res.append(dict(zip(("tag", "date", "value_float", "value_int"), line.split(","))))
              file_new = ''.join((file, '_'))
              os.rename(file, file_new)
              return res
     return False
+
+
+
 def run():
     # LOGS('Converter/run', 'Run Convertor ', 'INFO')
     # _old_excepthook = sys.excepthook

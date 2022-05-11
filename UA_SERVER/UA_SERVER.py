@@ -5,6 +5,7 @@ from opcua import ua, Server
 from opcua.ua import NodeIdType, NodeId
 # from log.LOGS import LOGS
 from converter.UpdateEventHandle import get_ua_type
+import converter
 
 
 class UA_SERVER:
