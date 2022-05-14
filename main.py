@@ -2,7 +2,7 @@ import uuid
 from threading import Thread
 import copy
 import logging
-from datetime import datetime
+import datetime
 import time
 from math import sin
 import sys
@@ -84,10 +84,10 @@ class VarUpdater(Thread):
 
             if flag != 1:
                flag = 1
-               self.var.set_value(1)
+               self.var.set_value(True)
             else:
                flag = 0
-               self.var.set_value(0)
+               self.var.set_value(False)
             tags = converter.get_file(path)
             if tags != False:
                 if 'myvar2' in locals ():
@@ -104,11 +104,12 @@ class VarUpdater(Thread):
                                                              ua.VariantType.Float))
                         else:
                             myvar2.append(myobj.add_variable(idx, tags1['tag'], float(tags1['value_int']), ua.VariantType.Int64))
+                            print('In the work..Int64.')
                     for index in myvar2:
                         index.set_writable()
 
             print('In the work...')
-            time.sleep(5)
+            time.sleep(10)
 
 
 if __name__ == '__main__':
@@ -139,7 +140,14 @@ if __name__ == '__main__':
     # create directly some objects and variables
     myobj = server.nodes.objects.add_object(idx, "DATA")
 
-    mysin = myobj.add_variable(idx, "Life_Server", 0, ua.VariantType.Float)
+    # date_time_str = '29-09-2021 12:27:43'
+    # timestamp = datetime.datetime.strptime(date_time_str, '%d-%m-%Y %H:%M:%S')
+    # datavalue = ua.DataValue(variant=42, sourceTimestamp=timestamp)
+
+    mysin = myobj.add_variable(idx, "Life_Server", True, ua.VariantType.Boolean)
+    # mysin = myobj.add_variable(idx, "Life_Server", 42)
+
+    # mysin.set_value(datavalue)
 
 
 
@@ -151,8 +159,8 @@ if __name__ == '__main__':
     # creating a default event object
     # The event object automatically will have members for all events properties
     # you probably want to create a custom event type, see other examples
-    myevgen = server.get_event_generator()
-    myevgen.event.Severity = 300
+    # myevgen = server.get_event_generator()
+    # myevgen.event.Severity = 300
 
     # starting!
     server.start()
