@@ -4,7 +4,6 @@ import copy
 import logging
 import datetime
 import time
-from math import sin
 import sys
 import converter
 
@@ -27,47 +26,9 @@ except ImportError:
 from opcua import ua, uamethod, Server
 
 
-class SubHandler(object):
-    """
-    Subscription Handler. To receive events from server for a subscription
-    """
-
-    def datachange_notification(self, node, val, data):
-        print("Python: New data change event", node, val)
-
-    def event_notification(self, event):
-        print("Python: New event", event)
 
 
-# method to be exposed through server
 
-def func(parent, variant):
-    ret = False
-    if variant.Value % 2 == 0:
-        ret = True
-    return [ua.Variant(ret, ua.VariantType.Boolean)]
-
-
-# method to be exposed through server
-# uses a decorator to automatically convert to and from variants
-
-@uamethod
-def func(parent, value):
-    return value * 2
-
-def tree_up(path1):
-        tags = converter.get_file(path1)
-        myobj1 = server.get_objects_node()
-        if tags != False:
-            myvar2 = []
-            for tags1 in tags:
-                if tags1['value_float'] != '':
-                    myvar2.append(
-                        myobj1.add_variable(2, tags1['tag'], float(tags1['value_float']), ua.VariantType.Float))
-                else:
-                    myvar2.append(myobj1.add_variable(2, tags1['tag'], int(tags1['value_int']), ua.VariantType.Int64))
-            for index in myvar2:
-                index.set_writable()
 
 class VarUpdater(Thread):
     def __init__(self, var):
@@ -90,23 +51,34 @@ class VarUpdater(Thread):
                self.var.set_value(False)
             tags = converter.get_file(path)
             if tags != False:
-                if 'myvar2' in locals ():
+                if 'myvar2' in locals():
                     for i in range(len(tags)):
                         if tags[i]['value_float'] != '':
-                           myvar2[i].set_value(tags[i]['value_float'])
+                           timestamp = datetime.datetime.strptime(tags[i]['date'], '%d-%b-%Y %H:%M:%S')
+                           datavalue = ua.DataValue(variant=tags[i]['value_float'], sourceTimestamp=timestamp)
+                           myvar2[i].set_value(datavalue)
                         else:
-                           myvar2[i].set_value(tags[i]['value_int'])
+                           timestamp = datetime.datetime.strptime(tags[i]['date'], '%d-%b-%Y %H:%M:%S')
+                           datavalue = ua.DataValue(variant=tags[i]['value_int'], sourceTimestamp=timestamp)
+                           myvar2[i].set_value(datavalue)
                 else:
                     myvar2 = []
                     for tags1 in tags:
                         if tags1['value_float'] != '':
-                            myvar2.append(myobj.add_variable(idx, tags1['tag'], float(tags1['value_float']),
-                                                             ua.VariantType.Float))
+                            var = myobj.add_variable(idx, tags1['tag'], float(tags1['value_float']),
+                                                     ua.VariantType.Float)
+                            myvar2.append(var)
+                            timestamp = datetime.datetime.strptime(tags1['date'], '%d-%b-%Y %H:%M:%S')
+                            datavalue = ua.DataValue(variant=tags1['value_float'], sourceTimestamp=timestamp)
+                            var.set_value(datavalue)
                         else:
-                            myvar2.append(myobj.add_variable(idx, tags1['tag'], float(tags1['value_int']), ua.VariantType.Int64))
+                            var = myobj.add_variable(idx, tags1['tag'], float(tags1['value_int']),
+                                                     ua.VariantType.Int64)
+                            myvar2.append(var)
                             print('In the work..Int64.')
-                    for index in myvar2:
-                        index.set_writable()
+                            timestamp = datetime.datetime.strptime(tags1['date'], '%d-%b-%Y %H:%M:%S')
+                            datavalue = ua.DataValue(variant=tags1['value_int'], sourceTimestamp=timestamp)
+                            var.set_value(datavalue)
 
             print('In the work...')
             time.sleep(10)
@@ -117,7 +89,6 @@ if __name__ == '__main__':
     path = config['path']
     time_period = config['UPDATE_RATE']
 
-    # logging.basicConfig(level=logging.DEBUG)
     server = Server()
 
     server.set_endpoint(config['UA_HOST'])
@@ -125,45 +96,19 @@ if __name__ == '__main__':
     # setup our own namespace, not really necessary but should as spec
     uri = config['UA_ROOT_NAMESPACE']
     idx = server.register_namespace(uri)
-    # create a new node type we can instantiate in our address space
-    dev = server.nodes.base_object_type.add_object_type(idx, "MyDevice")
-    dev.add_variable(idx, "sensor1", 1.0)
-    dev.add_property(idx, "device_id", "0340")
-    ctrl = dev.add_object(idx, "controller")
-    ctrl.set_modelling_rule(True)
-    ctrl.add_property(idx, "state", "Idle").set_modelling_rule(True)
-    myfolder = server.nodes.objects.add_folder(idx, "myEmptyFolder")
-    # instanciate one instance of our device
-    mydevice = server.nodes.objects.add_object(idx, "Device0001", dev)
-    mydevice_var = mydevice.get_child(
-        ["{}:controller".format(idx), "{}:state".format(idx)])  # get proxy to our device state variable
-    # create directly some objects and variables
     myobj = server.nodes.objects.add_object(idx, "DATA")
 
-    # date_time_str = '29-09-2021 12:27:43'
-    # timestamp = datetime.datetime.strptime(date_time_str, '%d-%m-%Y %H:%M:%S')
-    # datavalue = ua.DataValue(variant=42, sourceTimestamp=timestamp)
+    date_time_str = '29-Sep-2021 12:27:43'
+    timestamp = datetime.datetime.strptime(date_time_str, '%d-%b-%Y %H:%M:%S')
+    datavalue = ua.DataValue(variant=True, sourceTimestamp=timestamp)
 
-    mysin = myobj.add_variable(idx, "Life_Server", True, ua.VariantType.Boolean)
+    mysin = myobj.add_variable(idx,"Life_Server", False, ua.VariantType.Boolean)
     # mysin = myobj.add_variable(idx, "Life_Server", 42)
 
-    # mysin.set_value(datavalue)
+    mysin.set_value(datavalue)
 
-
-
-
-   # tree_up(path)
-
-
-
-    # creating a default event object
-    # The event object automatically will have members for all events properties
-    # you probably want to create a custom event type, see other examples
-    # myevgen = server.get_event_generator()
-    # myevgen.event.Severity = 300
 
     # starting!
     server.start()
-    print("Available loggers are: ", logging.Logger.manager.loggerDict.keys())
     vup = VarUpdater(mysin)  # just  a stupide class update a variable
     vup.start()

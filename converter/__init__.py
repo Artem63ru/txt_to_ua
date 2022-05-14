@@ -1,59 +1,7 @@
-from tkinter import *
-import sys
-import argparse
+
 import xml.etree.ElementTree as ET
-# from log.LOGS import LOGS
-import sched, time
-import json
-import asyncio
 import os
 import os.path
-from UA_SERVER.UA_SERVER import UA_SERVER
-s = sched.scheduler(time.time, time.sleep)
-
-#
-# class MyService:
-#     _svc_name_ = 'MyService'
-#     _svc_display_name_ = 'My Service display name'
-#
-#     def __init__(self):
-#         self.a = 0
-#         self.tim = time.localtime()
-#         self.running = None
-#
-#     def stop_service(self):
-#         """Stop the service"""
-#         self.running = False
-#
-#     def run_service(self):
-#         """Main service loop. This is where work is done!"""
-#         self.running = True
-#         self.tim = time.localtime()
-#         print('start сервиса', time.strftime("%H:%M:%S", self.tim))
-#         run()
-#
-#
-# class MyServiceFramework(win32serviceutil.ServiceFramework):
-#     _svc_name_ = 'MyService'
-#     _svc_display_name_ = 'My Service display name'
-#
-#     def SvcDoRun(self):
-#         self.service_impl = MyService()
-#         self.ReportServiceStatus(win32service.SERVICE_START_PENDING)
-#         self.ReportServiceStatus(win32service.SERVICE_RUNNING)
-#         self.service_impl.run_service()
-#
-#     def SvcStop(self):
-#         """Stop the service"""
-#         self.ReportServiceStatus(win32service.SERVICE_STOP_PENDING)
-#         self.service_impl.stop_service()
-#         self.ReportServiceStatus(win32service.SERVICE_STOPPED)
-#
-
-def restart_connection(object_cl):
-    s.enter(5, 1, restart_connection)
-    print(object_cl.CheckConnected())
-
 
 def get_config(configFile='cfg.xml'):
     tree = ET.parse(configFile)
@@ -65,10 +13,8 @@ def get_config(configFile='cfg.xml'):
     return res
 
 def get_file(dir):
-    n=0
+    n = 0
     res = []
-
-
     for file in os.listdir(dir):
             if file.endswith(".txt"):
              fl = os.path.join(dir, file)
@@ -80,29 +26,4 @@ def get_file(dir):
              return res
     return False
 
-
-
-def run():
-
-        config = get_config()
-
-        ua_serv = UA_SERVER(config['UA_HOST'], config['UA_SERVER_NAME'], config['UA_ROOT_NAMESPACE'])
-
-
-        ua_serv.start()
-
-
-        ua_serv.add_folder('root23')
-
-
-        with open('DA_TREE.json', 'r') as file:
-             Tree = json.load(file)
-        ua_serv.create_tree(Tree)
-
-
-        while True:
-            asyncio.sleep(10)
-            with open('DA_TREE.json', 'r') as file:
-                Tree = json.load(file)
-            ua_serv.create_tree(Tree)
 
