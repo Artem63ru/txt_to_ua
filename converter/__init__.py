@@ -12,18 +12,22 @@ def get_config(configFile='cfg.xml'):
 
     return res
 
+def last_file(directory):
+    files = [os.path.join(directory, _) for _ in os.listdir(directory) if _.endswith('.txt')]
+    if len(files)>0:
+        return max(files, key=os.path.getctime)
+    else:
+        return False
+
 def get_file(dir):
-    n = 0
     res = []
-    for file in os.listdir(dir):
-            if file.endswith(".txt"):
-             fl = os.path.join(dir, file)
-             for line in open(fl, 'r'):
+    fl = last_file(dir)
+    if fl != False:
+        for line in open(fl, 'r'):
                  line = line.strip()
                  res.append(dict(zip(("tag", "date", "value_float", "value_int"), line.split(","))))
-             file_new = ''.join((file, '_'))
-             os.rename(file, file_new)
-             return res
-    return False
+        return res
+    else:
+        return False
 
 

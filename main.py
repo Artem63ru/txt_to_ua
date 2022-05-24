@@ -25,9 +25,19 @@ except ImportError:
 
 from opcua import ua, uamethod, Server
 
-
-
-
+def has_duplicates(lst):
+    if lst != False:
+         mass_tag = []
+         for i in range(len(lst)):
+             mass_tag.append(lst[i]['tag'])
+         x = set(mass_tag)
+         for c in x:
+            if (mass_tag.count(c) > 1):
+              indices = [i for i, x in enumerate(mass_tag) if x == c]
+              lst.pop(indices[0])
+         return lst
+    else:
+        return False
 
 
 class VarUpdater(Thread):
@@ -42,14 +52,15 @@ class VarUpdater(Thread):
     def run(self):
         flag = 0
         while not self._stopev:
-
+            # Мигающий бит
             if flag != 1:
                flag = 1
                self.var.set_value(True)
             else:
                flag = 0
                self.var.set_value(False)
-            tags = converter.get_file(path)
+            # Чтение значений из файла и проверка на дубли, если находит дубли убирает
+            tags = has_duplicates(converter.get_file(path))
             if tags != False:
                 if 'myvar2' in locals():
                     for i in range(len(tags)):
@@ -65,21 +76,26 @@ class VarUpdater(Thread):
                     myvar2 = []
                     for tags1 in tags:
                         if tags1['value_float'] != '':
-                            var = myobj.add_variable(idx, tags1['tag'], float(tags1['value_float']),
-                                                     ua.VariantType.Float)
+                            nodeID = NodeId(identifier=tags1['tag'], namespaceidx=idx, nodeidtype=NodeIdType.String)
+                            var = myobj.add_variable(nodeid=nodeID,
+                                                     bname=tags1['tag'],
+                                                     val=float(tags1['value_float']),
+                                                     varianttype=ua.VariantType.Float)
                             myvar2.append(var)
                             timestamp = datetime.datetime.strptime(tags1['date'], '%d-%b-%Y %H:%M:%S')
                             datavalue = ua.DataValue(variant=tags1['value_float'], sourceTimestamp=timestamp)
                             var.set_value(datavalue)
                         else:
-                            var = myobj.add_variable(idx, tags1['tag'], float(tags1['value_int']),
-                                                     ua.VariantType.Int64)
+                            nodeID = NodeId(identifier=tags1['tag'], namespaceidx=idx, nodeidtype=NodeIdType.String)
+                            var = myobj.add_variable(nodeid=nodeID,
+                                                     bname=tags1['tag'],
+                                                     val=int(tags1['value_int']),
+                                                     varianttype=ua.VariantType.Int64)
                             myvar2.append(var)
                             print('In the work..Int64.')
                             timestamp = datetime.datetime.strptime(tags1['date'], '%d-%b-%Y %H:%M:%S')
                             datavalue = ua.DataValue(variant=tags1['value_int'], sourceTimestamp=timestamp)
                             var.set_value(datavalue)
-
             print('In the work...')
             time.sleep(10)
 
@@ -101,8 +117,12 @@ if __name__ == '__main__':
     date_time_str = '29-Sep-2021 12:27:43'
     timestamp = datetime.datetime.strptime(date_time_str, '%d-%b-%Y %H:%M:%S')
     datavalue = ua.DataValue(variant=True, sourceTimestamp=timestamp)
-
-    mysin = myobj.add_variable(idx,"Life_Server", False, ua.VariantType.Boolean)
+    nodeID = NodeId(identifier="Life_Server", namespaceidx=idx, nodeidtype=NodeIdType.String)
+    # mysin = myobj.add_variable(idx,"Life_Server", False, ua.VariantType.Boolean)
+    mysin = myobj.add_variable( nodeid=nodeID,
+                                bname="Life_Server",
+                                val = False,
+                                varianttype = ua.VariantType.Boolean)
     # mysin = myobj.add_variable(idx, "Life_Server", 42)
 
     mysin.set_value(datavalue)
