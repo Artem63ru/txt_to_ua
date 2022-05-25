@@ -66,11 +66,11 @@ class VarUpdater(Thread):
                     for i in range(len(tags)):
                         if tags[i]['value_float'] != '':
                            timestamp = datetime.datetime.strptime(tags[i]['date'], '%d-%b-%Y %H:%M:%S')
-                           datavalue = ua.DataValue(variant=tags[i]['value_float'], sourceTimestamp=timestamp)
+                           datavalue = ua.DataValue(variant=float(tags[i]['value_float']), sourceTimestamp=timestamp)
                            myvar2[i].set_value(datavalue)
                         else:
                            timestamp = datetime.datetime.strptime(tags[i]['date'], '%d-%b-%Y %H:%M:%S')
-                           datavalue = ua.DataValue(variant=tags[i]['value_int'], sourceTimestamp=timestamp)
+                           datavalue = ua.DataValue(variant=int(tags[i]['value_int']), sourceTimestamp=timestamp)
                            myvar2[i].set_value(datavalue)
                 else:
                     myvar2 = []
@@ -83,7 +83,7 @@ class VarUpdater(Thread):
                                                      varianttype=ua.VariantType.Float)
                             myvar2.append(var)
                             timestamp = datetime.datetime.strptime(tags1['date'], '%d-%b-%Y %H:%M:%S')
-                            datavalue = ua.DataValue(variant=tags1['value_float'], sourceTimestamp=timestamp)
+                            datavalue = ua.DataValue(variant=float(tags1['value_float']), sourceTimestamp=timestamp)
                             var.set_value(datavalue)
                         else:
                             nodeID = NodeId(identifier=tags1['tag'], namespaceidx=idx, nodeidtype=NodeIdType.String)
@@ -94,7 +94,7 @@ class VarUpdater(Thread):
                             myvar2.append(var)
                             print('In the work..Int64.')
                             timestamp = datetime.datetime.strptime(tags1['date'], '%d-%b-%Y %H:%M:%S')
-                            datavalue = ua.DataValue(variant=tags1['value_int'], sourceTimestamp=timestamp)
+                            datavalue = ua.DataValue(variant=int(tags1['value_int']), sourceTimestamp=timestamp)
                             var.set_value(datavalue)
             print('In the work...')
             time.sleep(10)
