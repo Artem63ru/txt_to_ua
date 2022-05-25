@@ -25,7 +25,7 @@ def get_file(dir):
     if fl != False:
         for line in open(fl, 'r'):
                  line = line.strip()
-                 res.append(dict(zip(("tag", "date", "value_float", "value_int"), line.split(","))))
+                 res.append(dict(zip(("tag", "date", "value", "Good"), line.split(","))))
         return res
     else:
         return False

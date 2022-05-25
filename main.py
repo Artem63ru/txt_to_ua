@@ -64,37 +64,37 @@ class VarUpdater(Thread):
             if tags != False:
                 if 'myvar2' in locals():
                     for i in range(len(tags)):
-                        if tags[i]['value_float'] != '':
+                        if tags1['tag'].endswith('Comment'):
                            timestamp = datetime.datetime.strptime(tags[i]['date'], '%d-%b-%Y %H:%M:%S')
-                           datavalue = ua.DataValue(variant=tags[i]['value_float'], sourceTimestamp=timestamp)
+                           datavalue = ua.DataValue(variant=tags[i]['value'], sourceTimestamp=timestamp)
                            myvar2[i].set_value(datavalue)
                         else:
                            timestamp = datetime.datetime.strptime(tags[i]['date'], '%d-%b-%Y %H:%M:%S')
-                           datavalue = ua.DataValue(variant=tags[i]['value_int'], sourceTimestamp=timestamp)
+                           datavalue = ua.DataValue(variant=float(tags[i]['value']), sourceTimestamp=timestamp)
                            myvar2[i].set_value(datavalue)
                 else:
                     myvar2 = []
                     for tags1 in tags:
-                        if tags1['value_float'] != '':
+                        if tags1['tag'].endswith('Comment'):
                             nodeID = NodeId(identifier=tags1['tag'], namespaceidx=idx, nodeidtype=NodeIdType.String)
                             var = myobj.add_variable(nodeid=nodeID,
                                                      bname=tags1['tag'],
-                                                     val=float(tags1['value_float']),
-                                                     varianttype=ua.VariantType.Float)
+                                                     val=tags1['value'],
+                                                     varianttype=ua.VariantType.String)
                             myvar2.append(var)
                             timestamp = datetime.datetime.strptime(tags1['date'], '%d-%b-%Y %H:%M:%S')
-                            datavalue = ua.DataValue(variant=tags1['value_float'], sourceTimestamp=timestamp)
+                            datavalue = ua.DataValue(variant=tags1['value'], sourceTimestamp=timestamp)
                             var.set_value(datavalue)
                         else:
                             nodeID = NodeId(identifier=tags1['tag'], namespaceidx=idx, nodeidtype=NodeIdType.String)
                             var = myobj.add_variable(nodeid=nodeID,
                                                      bname=tags1['tag'],
-                                                     val=int(tags1['value_int']),
-                                                     varianttype=ua.VariantType.Int64)
+                                                     val=float(tags1['value']),
+                                                     varianttype=ua.VariantType.Float)
                             myvar2.append(var)
-                            print('In the work..Int64.')
+                            print('In the work..Float.')
                             timestamp = datetime.datetime.strptime(tags1['date'], '%d-%b-%Y %H:%M:%S')
-                            datavalue = ua.DataValue(variant=tags1['value_int'], sourceTimestamp=timestamp)
+                            datavalue = ua.DataValue(variant=float(tags1['value']), sourceTimestamp=timestamp)
                             var.set_value(datavalue)
             print('In the work...')
             time.sleep(10)
@@ -112,7 +112,7 @@ if __name__ == '__main__':
     # setup our own namespace, not really necessary but should as spec
     uri = config['UA_ROOT_NAMESPACE']
     idx = server.register_namespace(uri)
-    myobj = server.nodes.objects.add_object(idx, "DATA")
+    myobj = server.nodes.objects.add_folder(idx, "DATA")
 
     date_time_str = '29-Sep-2021 12:27:43'
     timestamp = datetime.datetime.strptime(date_time_str, '%d-%b-%Y %H:%M:%S')
