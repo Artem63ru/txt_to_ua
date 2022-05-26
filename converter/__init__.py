@@ -25,7 +25,12 @@ def get_file(dir):
     if fl != False:
         for line in open(fl, 'r'):
                  line = line.strip()
-                 res.append(dict(zip(("tag", "date", "value", "Good"), line.split(","))))
+                 res.append(dict(zip(("tag", "date", "value", "Status"), line.split(","))))
+        for i in range(len(res)):
+            if 'Status' in res[i]:
+                res[i]['Status'] = 'Bad'
+            else:
+                res[i]['Status'] = 'Good'
         return res
     else:
         return False
