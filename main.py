@@ -51,7 +51,8 @@ def create_tree(tags):
                                      varianttype=ua.VariantType.String)
             Montags.append(var)
             timestamp = datetime.datetime.strptime(tags1['date'], '%d-%b-%Y %H:%M:%S')
-            datavalue = ua.DataValue(variant=tags1['value'], sourceTimestamp=timestamp)
+            datavalue = ua.DataValue(variant=tags1['value'])
+            datavalue.SourceTimestamp = timestamp
             if (tags1['Status'] == 'Bad'):
                 datavalue.StatusCode = ua.StatusCode(ua.StatusCodes.Bad)
             var.set_value(datavalue)
@@ -64,7 +65,8 @@ def create_tree(tags):
             Montags.append(var)
             print('In the work..Float.')
             timestamp = datetime.datetime.strptime(tags1['date'], '%d-%b-%Y %H:%M:%S')
-            datavalue = ua.DataValue(variant=float(tags1['value']), sourceTimestamp=timestamp)
+            datavalue = ua.DataValue(variant=float(tags1['value']))
+            datavalue.SourceTimestamp = timestamp
             if (tags1['Status'] == 'Bad'):
                 datavalue.StatusCode = ua.StatusCode(ua.StatusCodes.Bad)
             var.set_value(datavalue)
@@ -96,13 +98,15 @@ class VarUpdater(Thread):
                     for i in range(len(tags)):
                          if tags[i]['tag'].endswith('Comment'):
                            timestamp = datetime.datetime.strptime(tags[i]['date'], '%d-%b-%Y %H:%M:%S')
-                           datavalue = ua.DataValue(variant=tags[i]['value'], sourceTimestamp=timestamp)
+                           datavalue = ua.DataValue(variant=tags[i]['value'])
+                           datavalue.SourceTimestamp = timestamp
                            if (tags[i]['Status'] == 'Bad'):
                                datavalue.StatusCode = ua.StatusCode(ua.StatusCodes.Bad)
                            myvar2[i].set_value(datavalue)
                          else:
                            timestamp = datetime.datetime.strptime(tags[i]['date'], '%d-%b-%Y %H:%M:%S')
-                           datavalue = ua.DataValue(variant=float(tags[i]['value']), sourceTimestamp=timestamp)
+                           datavalue = ua.DataValue(variant=float(tags[i]['value']))
+                           datavalue.SourceTimestamp = timestamp
                            if (tags[i]['Status'] == 'Bad'):
                                datavalue.StatusCode = ua.StatusCode(ua.StatusCodes.Bad)
                            myvar2[i].set_value(datavalue)
@@ -130,7 +134,8 @@ if __name__ == '__main__':
 
     date_time_str = '29-Sep-2021 12:27:43'
     timestamp = datetime.datetime.strptime(date_time_str, '%d-%b-%Y %H:%M:%S')
-    datavalue = ua.DataValue(variant=True, sourceTimestamp=timestamp)
+    datavalue = ua.DataValue(variant=True)
+    datavalue.SourceTimestamp = timestamp
     nodeID = NodeId(identifier="Life_Server", namespaceidx=idx, nodeidtype=NodeIdType.String)
     # mysin = myobj.add_variable(idx,"Life_Server", False, ua.VariantType.Boolean)
     mysin = myobj.add_variable( nodeid=nodeID,
