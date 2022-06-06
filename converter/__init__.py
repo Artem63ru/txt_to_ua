@@ -2,6 +2,19 @@
 import xml.etree.ElementTree as ET
 import os
 import os.path
+from opcua import ua
+
+def get_ua_type(value):
+    if value.__class__.__name__ == 'int':
+        return ua.uatypes.VariantType.Int32
+    elif value.__class__.__name__ == 'float':
+        return ua.uatypes.VariantType.Double
+    elif value.__class__.__name__ == 'bool':
+        return ua.uatypes.VariantType.Boolean
+    elif value.__class__.__name__ == 'str':
+        return ua.uatypes.VariantType.String
+    else:
+        return None
 
 def get_config(configFile='cfg.xml'):
     tree = ET.parse(configFile)

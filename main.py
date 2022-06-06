@@ -38,39 +38,69 @@ def has_duplicates(lst):
          return lst
     else:
         return False
+# Разделение на число флоат и все остальное типа стринг
+def float_or_str (value):
+    try:
+        return float(value)
+    except:
+        return value
 
+
+#     Добавление значение в тэг
+def adder_variable(index, values):
+    timestamp = datetime.datetime.strptime(values['date'], '%d-%b-%Y %H:%M:%S')
+    datavalue = ua.DataValue(variant=float_or_str(values['value']))
+    datavalue.SourceTimestamp = timestamp
+    if (values['Status'] == 'Bad'):
+        datavalue.StatusCode = ua.StatusCode(ua.StatusCodes.Bad)
+    index.set_value(datavalue)
+# Построение дерева тэгов
 def create_tree(tags):
     Montags = []
     Montags.clear()
     for tags1 in tags:
-        if tags1['tag'].endswith('Comment'):
             nodeID = NodeId(identifier=tags1['tag'], namespaceidx=idx, nodeidtype=NodeIdType.String)
             var = myobj.add_variable(nodeid=nodeID,
                                      bname=tags1['tag'],
-                                     val=tags1['value'],
-                                     varianttype=ua.VariantType.String)
+                                     val=float_or_str(tags1['value']),
+                                     varianttype=converter.get_ua_type(float_or_str(tags1['value'])))
             Montags.append(var)
-            timestamp = datetime.datetime.strptime(tags1['date'], '%d-%b-%Y %H:%M:%S')
-            datavalue = ua.DataValue(variant=tags1['value'])
-            datavalue.SourceTimestamp = timestamp
-            if (tags1['Status'] == 'Bad'):
-                datavalue.StatusCode = ua.StatusCode(ua.StatusCodes.Bad)
-            var.set_value(datavalue)
-        else:
-            nodeID = NodeId(identifier=tags1['tag'], namespaceidx=idx, nodeidtype=NodeIdType.String)
-            var = myobj.add_variable(nodeid=nodeID,
-                                     bname=tags1['tag'],
-                                     val=float(tags1['value']),
-                                     varianttype=ua.VariantType.Float)
-            Montags.append(var)
-            print('In the work..Float.')
-            timestamp = datetime.datetime.strptime(tags1['date'], '%d-%b-%Y %H:%M:%S')
-            datavalue = ua.DataValue(variant=float(tags1['value']))
-            datavalue.SourceTimestamp = timestamp
-            if (tags1['Status'] == 'Bad'):
-                datavalue.StatusCode = ua.StatusCode(ua.StatusCodes.Bad)
-            var.set_value(datavalue)
+            adder_variable(var, tags1)
     return Montags
+
+
+# def create_tree(tags):
+#     Montags = []
+#     Montags.clear()
+#     for tags1 in tags:
+#         if tags1['tag'].endswith('Comment'):
+#             nodeID = NodeId(identifier=tags1['tag'], namespaceidx=idx, nodeidtype=NodeIdType.String)
+#             var = myobj.add_variable(nodeid=nodeID,
+#                                      bname=tags1['tag'],
+#                                      val=tags1['value'],
+#                                      varianttype=ua.VariantType.String)
+#             Montags.append(var)
+#             timestamp = datetime.datetime.strptime(tags1['date'], '%d-%b-%Y %H:%M:%S')
+#             datavalue = ua.DataValue(variant=tags1['value'])
+#             datavalue.SourceTimestamp = timestamp
+#             if (tags1['Status'] == 'Bad'):
+#                 datavalue.StatusCode = ua.StatusCode(ua.StatusCodes.Bad)
+#             var.set_value(datavalue)
+#         else:
+#             nodeID = NodeId(identifier=tags1['tag'], namespaceidx=idx, nodeidtype=NodeIdType.String)
+#             var = myobj.add_variable(nodeid=nodeID,
+#                                      bname=tags1['tag'],
+#                                      val=float(tags1['value']),
+#                                      varianttype=ua.VariantType.Float)
+#             Montags.append(var)
+#             print('In the work..Float.')
+#             timestamp = datetime.datetime.strptime(tags1['date'], '%d-%b-%Y %H:%M:%S')
+#             datavalue = ua.DataValue(variant=float(tags1['value']))
+#             datavalue.SourceTimestamp = timestamp
+#             if (tags1['Status'] == 'Bad'):
+#                 datavalue.StatusCode = ua.StatusCode(ua.StatusCodes.Bad)
+#             var.set_value(datavalue)
+#     return Montags
 
 class VarUpdater(Thread):
     def __init__(self, var):
@@ -80,6 +110,7 @@ class VarUpdater(Thread):
 
     def stop(self):
         self._stopev = True
+
 
     def run(self):
         flag = 0
@@ -96,26 +127,14 @@ class VarUpdater(Thread):
             if tags != False:
                 if 'myvar2' in locals():
                     for i in range(len(tags)):
-                         if tags[i]['tag'].endswith('Comment'):
-                           timestamp = datetime.datetime.strptime(tags[i]['date'], '%d-%b-%Y %H:%M:%S')
-                           datavalue = ua.DataValue(variant=tags[i]['value'])
-                           datavalue.SourceTimestamp = timestamp
-                           if (tags[i]['Status'] == 'Bad'):
-                               datavalue.StatusCode = ua.StatusCode(ua.StatusCodes.Bad)
-                           myvar2[i].set_value(datavalue)
-                         else:
-                           timestamp = datetime.datetime.strptime(tags[i]['date'], '%d-%b-%Y %H:%M:%S')
-                           datavalue = ua.DataValue(variant=float(tags[i]['value']))
-                           datavalue.SourceTimestamp = timestamp
-                           if (tags[i]['Status'] == 'Bad'):
-                               datavalue.StatusCode = ua.StatusCode(ua.StatusCodes.Bad)
-                           myvar2[i].set_value(datavalue)
+                       adder_variable(myvar2[i], tags[i])
                 else:
                     myvar2 = []
                     myvar2 = create_tree(tags)
 
             print('In the work...')
             time.sleep(10)
+
 
 
 if __name__ == '__main__':
